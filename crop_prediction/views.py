@@ -15,14 +15,24 @@ def Homepage(request):
         N = float(request.POST.get('N'))
         P = float(request.POST.get('P'))
         K = float(request.POST.get('K'))
+        area = float(request.POST.get('area'))
+        temperature = float(request.POST.get('temperature'))
 
-        print(sowing_temp)
+  
         loaded_model=pickle.load(open('crop_prediction/requirements/forest_classifier.pkl','rb'))
         loaded_scale=pickle.load(open('crop_prediction/requirements/scale.pkl','rb'))
         data =loaded_scale.transform(np.array([[avg_year_temp, ph, rainfall, sowing_temp, harvesting_temp, N, P, K]]))
         prediction = loaded_model.predict(data)
 
-        context = {'result': prediction}
+
+        loaded_model2=pickle.load(open(f'crop_prediction/requirements/additional_files/crop_{prediction[0]}.csv.pkl','rb'))
+        loaded_scale2=pickle.load(open(f'crop_prediction/requirements/additional_files/crop_{prediction[0]}.csv_scaler.pkl','rb'))
+        inp2=[area, temperature, rainfall, sowing_temp, harvesting_temp]
+        data2=loaded_scale2.transform([inp2])
+        prediction2 = loaded_model2.predict(data2)
+       
+
+        context = {'result': prediction[0], 'result2':prediction2[0]}
         return render(request, 'crop_prediction/Resultpage.html', context)
     context = {}
     return render(request, 'crop_prediction/Homepage.html', context)
